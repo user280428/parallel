@@ -1,13 +1,12 @@
-from GUI.const import home_path
-import os
+import pathlib
 
 
-setup_path = os.getcwd()
+home_path = pathlib.Path(__file__).parent.parent.absolute()
 
 
 # Чтение параметров из файла setup
 def open_setup_file():
-    f = open(setup_path, "r")
+    f = open(fr"{home_path}\setup\setup", "r")
     lines = f.readlines()
 
     _ip = lines[2].strip()
@@ -52,7 +51,7 @@ def save_setup_file(
         _lat_1, _lat_2, _lon_1, _lon_2,
         _l_max, _century
 ):
-    f = open(setup_path, "w")
+    f = open(fr"{home_path}\setup\setup", "w")
 
     satellite_string = ""
     for sat in _satellites:
@@ -109,5 +108,5 @@ Century
     f.close()
 
 
-# if __name__ == "__main__":
-#     print(open_setup_file())
+if __name__ == "__main__":
+    print(fr"{home_path}\setup\setup")

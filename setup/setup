@@ -2,9 +2,9 @@ DATABASE SETTINGS
 IP address
 127.0.0.1:3306
 Login
-root1
+root
 Password
-root1
+root
 
 SATELLITE SETTINGS
 SWA SWB SWC 

@@ -581,7 +581,7 @@ model_settings_change_layout = [
                      )
     ],
     [
-        sg.Button("Изменить параметры",
+        sg.Button("Сохранить параметры",
                   key="-SAVE_MODEL_SETTINGS_BUTTON-"
                   )
     ],
