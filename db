@@ -1,0 +1,30 @@
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `index_view` AS select `t1`.`date` AS `index_date`,`t1`.`dst` AS `dst`,coalesce(`t1`.`kp`,lag(`t1`.`kp`) OVER (ORDER BY `t1`.`date` ) ,lag(`t1`.`kp`,2) OVER (ORDER BY `t1`.`date` ) ) AS `kp` from (select `i1`.`date` AS `date`,`i1`.`dst` AS `dst`,`i2`.`kp` AS `kp` from ((select `index`.`date` AS `date`,`index`.`value` AS `dst` from `index` where (`index`.`code` = 'DST')) `i1` left join (select `index`.`date` AS `date2`,`index`.`value` AS `kp` from `index` where (`index`.`code` = 'KP')) `i2` on((`i1`.`date` = `i2`.`date2`)))) `t1`
+
+
+
+
+
+
+
+
+
+
+select
+	`code`,
+	`date`,
+	`latitude`,
+	`longitude`,
+	`radius`,
+	`v1`,
+	`v2`,
+	`v3`,
+	`n`,
+	`e`,
+	`c`,
+	`f`,
+	`dst`,
+    `kp`
+
+from (select * from `sat_sec_plain`
+	left join `index_view` on
+	`sat_sec_plain`.`date` = `index_view`.`index_date`) `iv`;
