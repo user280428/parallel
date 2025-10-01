@@ -1,7 +1,6 @@
 # Requirements
 ---
 ## Python 3.13.7
----
 - pandas = 2.3.3
 - numpy = 2.3.3
 - SQLAlchemy = 2.0.43
