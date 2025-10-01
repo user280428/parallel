@@ -1,0 +1,44 @@
+DATABASE SETTINGS
+IP address
+127.0.0.1:3306
+Login
+root1
+Password
+root1
+
+SATELLITE SETTINGS
+SWA SWB SWC 
+
+SELECTING SETTINGS
+start month
+1
+start year
+2023
+end month
+1
+end year
+2024
+sun position angle
+-10.0
+abs diff f and nec
+3.0
+Dst max
+5.0
+dDst max
+5.0
+Kp max
+2.0
+Min Lat
+-90.0
+Max Lat
+90.0
+Min Lon
+-180.0
+Max Lon
+180.0
+
+CALCULATING SETTINGS
+L max
+13
+Century
+10
