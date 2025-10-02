@@ -22,9 +22,6 @@ kp_types_raw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
                 26, 27]
 
 
-# TODO: Сделать выбор спутников для модели
-
-
 # Вспомогательная функция для чтения из БД
 def code_condition(code: list):
     match len(code):
@@ -98,6 +95,7 @@ def download_data_from_sql(date1, date2, dbConnect, code, lat1=-90, lat2=+90, lo
     frame = pd.read_sql(selectquery, dbConnect)
 
     #     frame.to_pickle('data/SWARM_sec_{}_{}.pkl'.format(date1, date2))
+
     return frame
 
 
