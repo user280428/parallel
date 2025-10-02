@@ -23,14 +23,18 @@ kp_types_raw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
 
 
 # Вспомогательная функция для чтения из БД
-def code_condition(code: list):
-    match len(code):
+def code_condition(codes: list):
+    match len(codes):
         case 1:
-            return f"CODE = '{code[0]}'"
+            return f"CODE = '{codes[0]}'"
         case 2:
-            return f"CODE = '{code[0]}' OR CODE = '{code[1]}'"
+            return f"CODE = '{codes[0]}' OR CODE = '{codes[1]}'"
         case 3:
-            return f"CODE = '{code[0]}' OR CODE = '{code[1]}' OR CODE = '{code[2]}'"
+            return f"CODE = '{codes[0]}' OR CODE = '{codes[1]}' OR CODE = '{codes[2]}'"
+        case 4:
+            return f"CODE = '{codes[0]}' OR CODE = '{codes[1]}' OR CODE = '{codes[2]}' OR CODE = '{codes[3]}'"
+        case 5:
+            return f"CODE = '{codes[0]}' OR CODE = '{codes[1]}' OR CODE = '{codes[2]}' OR CODE = '{codes[3]}' OR CODE = '{codes[4]}'"
 
 
 # 4 Функции для чтения из БД
@@ -41,28 +45,37 @@ def prepare_query(
         lat2: float | int,
         lon1: float | int,
         lon2: float | int,
-        code: list[str]
+        codes: list[str]
 ) -> str:
     selectquery = f"""
-SELECT 
-    CODE,
-    DATE,
-    latitude,
-    longitude,
-    radius,
-    n,
-    e,
-    c,
-    f
-FROM `geomag`.`sat_sec_plain`
-WHERE 
-{code_condition(code)}
-AND
-DATE >= {str(date1)} AND DATE < {str(date2)}
-AND
-latitude >= {str(lat1)} AND latitude < {str(lat2)}
-AND
-longitude >= {str(lon1)} AND longitude < {str(lon2)}
+select 
+	`code`,
+	`date`,
+	`latitude`,
+	`longitude`,
+	`radius`,
+	`v1`,
+	`v2`,
+	`v3`,
+	`n`,
+	`e`,
+	`c`,
+	`f`,
+	`dst`,
+    `kp`
+
+from (select * from `geomag`.`sat_sec_plain`
+	left join `geomag`.`index_view` on 
+	`geomag`.`sat_sec_plain`.`date` = `geomag`.`index_view`.`index_date`) `iv`
+	
+	where `iv`.`date` > {date1} and `iv`.`date` <= {date2}
+	and
+	`iv`.`latitude` >= {lat1} and `iv`.`latitude` <= {lat2}
+	and
+	`iv`.`longitude` >= {lon1} and `iv`.`longitude` <= {lon2}
+	and
+    {code_condition(codes)}
+                
                 """
 
     return selectquery
@@ -91,11 +104,8 @@ def download_data_from_sql(date1, date2, dbConnect, code, lat1=-90, lat2=+90, lo
     d2 = datetime.strptime(date2, "%Y-%m-%d").timestamp()
 
     selectquery = prepare_query(d1, d2, lat1, lat2, long1, long2, code)
-
     frame = pd.read_sql(selectquery, dbConnect)
-
-    #     frame.to_pickle('data/SWARM_sec_{}_{}.pkl'.format(date1, date2))
-
+    frame.to_csv("test.csv", index=False)
     return frame
 
 
@@ -513,23 +523,28 @@ while True:
 
         # Создание списка ['2023-01-01', '2023-02-01', ....
         month_list = pd.date_range(date1, date2,
-                                   freq="MS").strftime("%Y-%m-%d").tolist()
+                                   freq="D").strftime("%Y-%m-%d").tolist()
 
         # Создаем подключение к БД
         sqlEngine = create_engine(f"mysql+pymysql://{login}:{password}@{ip}", pool_recycle=3600)
+        print("Подключение создано")
 
         # Подключаемся к БД
         dbConnection = sqlEngine.connect()
+        print("Подключение установлено")
 
         # Делаем нажатую кнопку неактивной
         window["-START_DATA_PROCESSING_BUTTON-"].update(disabled=True)
         window["-PROCESSING_PROGRESS_TEXT-"].update("Происходит загрузка данных")
+        print("Загрузка")
         # Отображаем прогресбар
         window["-PROCESSING_PROGRESS_TEXT-"].update(visible=True)
         window.refresh()
 
         # Загружаем данные в DataFrame
+        print("Перед результатом")
         result = download_data_from_sql(month_list[0], month_list[1], dbConnection, satellites)
+        print("После результата")
         # Переформатируем дату из UNIX
         result["DATETIME"] = result.DATE.map(lambda a: datetime.fromtimestamp(a))
         # Берем первые 60 строк DataFrame
@@ -561,7 +576,7 @@ while True:
         DST["DATETIME"] = DST.DATE.map(lambda a: datetime.fromtimestamp(a))
         DST["Dst"] = DST["value"]
 
-        # Аналогично с KP  индексом
+        # Аналогично с KP индексом
         KP = index[index.CODE == "KP"]
         KP["Kp final"] = 0
         # Заменяем KP*3 на KP
